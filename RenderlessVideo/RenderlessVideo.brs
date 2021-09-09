@@ -7,8 +7,8 @@ sub init()
     ' timers
     m.holdTimer = m.top.FindNode("holdTimer")
     m.holdRewind = m.top.FindNode("holdRewind")
-    m.holdRewind.ObserveFieldScoped("fire", "onHoldRewind")
-    m.holdTimer.ObserveFieldScoped("fire", "onHoldDetection")
+    m.holdRewind.ObserveFieldScoped("fire", "OnHoldRewind")
+    m.holdTimer.ObserveFieldScoped("fire", "OnHoldDetection")
 
     m.forwardCount = invalid
     m.rewindCount = invalid
@@ -42,7 +42,7 @@ sub StopRewFF(doSeek = false as Boolean)
     end if
 end sub
 
-sub onHoldRewind()
+sub OnHoldRewind()
     GetVideoNode().control = "pause"
     if m.direction = "fastforward"
         newPosition = m.top.progressPosition + m.forwardCount * 4
@@ -62,7 +62,7 @@ sub onHoldRewind()
     end if
 end sub
 
-sub onHoldDetection()
+sub OnHoldDetection()
     GetVideoNode().control = "pause"
     if m.direction = "left"
         newPosition = m.top.progressPosition - m.top.seekdelta
@@ -81,7 +81,7 @@ sub onHoldDetection()
     end if
 end sub
 
-sub checkRewindingCount(rewindingType as String)
+sub CheckRewindingCount(rewindingType as String)
     if m[rewindingType] = invalid or m[rewindingType] = 8
         m[rewindingType] = 2
     else
@@ -90,45 +90,45 @@ sub checkRewindingCount(rewindingType as String)
     m.top.FFRewCount = m[rewindingType]
 end sub
 
-function handleRightKey(key as String) as Boolean
+function HandleRightKey(key as String) as Boolean
     StopRewFF()
     m.top.activeButton = key
     m.direction = key
-    onHoldDetection()
+    OnHoldDetection()
     m.holdTimer.control = "start"
     return true
 end function
 
-function handleLeftKey(key as String) as Boolean
+function HandleLeftKey(key as String) as Boolean
     StopRewFF()
     m.top.activeButton = key
     m.direction = key
-    onHoldDetection()
+    OnHoldDetection()
     m.holdTimer.control = "start"
     return true
 end function
 
-function handleFastforwardKey(key as String) as Boolean
+function HandleFastforwardKey(key as String) as Boolean
     m.rewindCount = invalid
-    checkRewindingCount("forwardCount")
+    CheckRewindingCount("forwardCount")
     m.top.activeButton = key
     m.direction = key
-    onHoldRewind()
+    OnHoldRewind()
     m.holdRewind.control = "start"
     return true
 end function
 
-function handleRewindKey(key as String) as Boolean
+function HandleRewindKey(key as String) as Boolean
     m.forwardCount = invalid
-    checkRewindingCount("rewindCount")
+    CheckRewindingCount("rewindCount")
     m.top.activeButton = key
     m.direction = key
-    onHoldRewind()
+    OnHoldRewind()
     m.holdRewind.control = "start"
     return true
 end function
 
-function handleReplayKey(key as String) as Boolean
+function HandleReplayKey(key as String) as Boolean
     m.top.activeButton = key
     m.top.progressPosition -= 20
     if m.top.progressPosition < 0 then m.top.progressPosition = 0
@@ -136,7 +136,7 @@ function handleReplayKey(key as String) as Boolean
     return true
 end function
 
-function handleOkAndPlayKey(key as String) as Boolean
+function HandleOkAndPlayKey(key as String) as Boolean
     m.direction = invalid
     m.top.activeButton = ""
     if m.top.progressPosition <> fix(GetVideoNode().position)
@@ -146,24 +146,36 @@ function handleOkAndPlayKey(key as String) as Boolean
     return false
 end function
 
-function onKeyEvent(key as String, press as Boolean) as Boolean
+function HandleBackKey(key as String) as Boolean
+    m.direction = invalid
+    if m.top.progressPosition <> fix(GetVideoNode().position)
+        StopRewFF(true)
+        return true
+    else
+        return false
+    end if
+end function
+
+function OnKeyEvent(key as String, press as Boolean) as Boolean
     handled = false
 
     if press = true
         ' block user interactions during loading of video
         handled = IsDoingSeek()
         if key = "right" and not handled
-            handled = handleRightKey(key)
+            handled = HandleRightKey(key)
         else if key = "left" and not handled
-            handled = handleLeftKey(key)
+            handled = HandleLeftKey(key)
         else if key = "fastforward" and not handled
-            handled = handleFastforwardKey(key)
+            handled = HandleFastforwardKey(key)
         else if key = "rewind" and not handled
-            handled = handleRewindKey(key)
+            handled = HandleRewindKey(key)
         else if key = "replay"
-            handled = handleReplayKey(key)
+            handled = HandleReplayKey(key)
         else if key = "play" or key = "OK"
-            handled = handleOkAndPlayKey(key)
+            handled = HandleOkAndPlayKey(key)
+        else if key = "back"
+            handled = HandleBackKey(key)
         end if
     else if press = false
         if key = "right" or key = "left"
@@ -172,7 +184,7 @@ function onKeyEvent(key as String, press as Boolean) as Boolean
                 if m.direction = invalid
                     ' user release button to fast and needed logic is not invoked
                     m.direction = key
-                    onHoldDetection()
+                    OnHoldDetection()
                 end if
                 StopRewFF(true)
             end if

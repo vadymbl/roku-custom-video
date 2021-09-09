@@ -42,6 +42,7 @@
         <Group
             id="transportControls"
             translation="[0,1280]"
+            opacity="0"
         >
             <Poster
                 id="controlsGradient"

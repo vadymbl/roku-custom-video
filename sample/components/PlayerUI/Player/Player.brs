@@ -113,3 +113,11 @@ end sub
 sub ShowTransportControls()
     OnTransportControlsShow(true)
 end sub
+
+function OnKeyEvent(key as String, press as Boolean) as Boolean
+    if press and key = "back" and m.transportControls.opacity > 0
+        HideTransportControls()
+        return true
+    end if
+    return false
+end function
