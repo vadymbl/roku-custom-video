@@ -1,5 +1,3 @@
-' MIT License
-' Copyright (c) 2021 Vadym Yarchych
 
 sub init()
     ' disable default video ui
